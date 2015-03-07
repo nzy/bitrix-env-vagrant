@@ -11,11 +11,13 @@
 
 Web сервер на виртуальной машине работает на 80 порту.
 
-## Настройка phpStorm для работы
+## Настройка PhpStorm для работы
 
- * Создаем сервер;
+ * Копируем файлы в проект PhpStorm;
+ * Создаем сервер в PhpStorm;
  * Ставим галку Use path mappings и прописываем локальный путь к проекту, а Absolute path on server прописываем в "/home/bitrix/www";
  * Редактируем Run/Debug Configurations;
  * Создаем PHP Web Application, все настройки оставляем по-умолчанию;
+ * Идем в Tools - Vagrant - Up;
 
 PhpStorm готов к отладке PHP на виртуальной машине.
