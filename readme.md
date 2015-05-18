@@ -17,7 +17,7 @@ Web сервер на виртуальной машине работает на 
 
 ## Настройка PhpStorm для работы
 
- * Копируем файлы в проект PhpStorm;
+ * Копируем файлы bitrix-env-vagrant в проект PhpStorm;
  * Создаем сервер в PhpStorm;
  * Ставим галку Use path mappings и прописываем локальный путь к проекту, а Absolute path on server прописываем в "/home/bitrix/www";
  * Редактируем Run/Debug Configurations;
