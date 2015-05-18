@@ -14,3 +14,11 @@ mkdir -p /tmp/php_upload/www
 
 chown -R bitrix:bitrix /tmp/php_session
 chown -R bitrix:bitrix /tmp/php_upload
+
+echo '
+EnableSendfile Off
+' >> /etc/httpd/bx/custom/z_bx_custom.conf 
+
+echo '
+sendfile off;
+' >> /etc/nginx/bx/conf/bitrix_general.conf
