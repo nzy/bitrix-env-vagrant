@@ -12,7 +12,7 @@ service httpd restart
 mkdir -p /tmp/php_sessions/www
 mkdir -p /tmp/php_upload/www
 
-chown -R bitrix:bitrix /tmp/php_session
+chown -R bitrix:bitrix /tmp/php_sessions
 chown -R bitrix:bitrix /tmp/php_upload
 
 echo '
