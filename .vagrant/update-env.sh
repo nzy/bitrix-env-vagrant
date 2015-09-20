@@ -1,5 +1,11 @@
 #!/bin/bash
 
+yum install -y php-opcache
+yum install -y php-apc
+
+yum remove -y php-pdo
+yum install -y php-pdo
+
 echo '
 xdebug.remote_enable = On
 xdebug.remote_connect_back = On' >> /etc/php.d/xdebug.ini.disabled
