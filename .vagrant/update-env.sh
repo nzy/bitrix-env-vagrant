@@ -1,10 +1,12 @@
 #!/bin/bash
 
-yum install -y php-opcache
-yum install -y php-apc
+sed -i 's/~\/menu.sh/#~\/menu.sh/' /root/.bash_profile
 
-yum remove -y php-pdo
-yum install -y php-pdo
+#yum install -y php-opcache
+#yum install -y php-apc
+
+#yum remove -y php-pdo
+#yum install -y php-pdo
 
 echo '
 xdebug.remote_enable = On
