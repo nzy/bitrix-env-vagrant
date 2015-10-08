@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sed -i 's/~\/menu.sh/#~\/menu.sh/' /root/.bash_profile
+#sed -i 's/~\/menu.sh/#~\/menu.sh/' /root/.bash_profile
 
 #yum install -y php-opcache
 #yum install -y php-apc

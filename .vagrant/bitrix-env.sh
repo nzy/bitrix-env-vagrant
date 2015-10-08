@@ -197,7 +197,6 @@ opcache.blacklist_filename=/etc/php.d/opcache*.blacklist" > /etc/php.d/opcache.i
     fi
 
     print "Bitrix Environment for Linux installation complete" 1
-    exit 0
 else
 
   echo "
@@ -217,6 +216,7 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-BitrixEnv
   yum -y install bitrix-env4.noarch
 
   echo -e "\e[1;32mBitrix Environment for Linux installation complete\e[0m"
-  exit 0
-
 fi
+
+sed -i 's/~\/menu.sh/#~\/menu.sh/' /root/.bash_profile
+exit 0
