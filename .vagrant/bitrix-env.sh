@@ -13,11 +13,16 @@ echo -e "\e[1;31mThis script MUST be run as root or it will fail\e[0m"
 echo "---"
 
 # Check if the OS matches Fedora 14-16 or CentOS/RHEL 5.* or CentOS/RHEL 6.*
-OS=$(cat /etc/redhat-release | awk {'print $1}')
-VER=$(cat /etc/redhat-release | awk {'print $3}')
+OS=$(cat /etc/redhat-release | awk '{print $1}')
+VER=$(cat /etc/redhat-release | awk '{print $3}')
 is_x86_64=$(uname -p | grep -wc 'x86_64')
 repo_file=/etc/yum.repos.d/bitrix.repo
-PHP54=1
+PHP54=0
+PHP56=1
+PHP_MODULES="xdebug curl dom mssql pdo phar posix sqlite3 sybase_ct sysvmsg
+ sysvsem sysvshm xmlwriter xsl mysqli pdo_dblib pdo_mysql pdo_sqlite wddx xmlreader xhprof"
+
+[[ -z $TEST_REPOSITORY ]] && TEST_REPOSITORY=0
 LOG=$(mktemp /tmp/bitrix-env-XXXXX.log)
 
 print(){
@@ -25,7 +30,7 @@ print(){
     notice=${2:-0}
     [[ $notice -eq 1 ]] && echo -e "${msg}"
     [[ $notice -eq 2 ]] && echo -e "\e[1;31m${msg}\e[0m"
-    echo "$(date +"%FTH:%M:%S"): $$ : $msg" >> $LOG
+    echo "$(date +"%FT%H:%M:%S"): $$ : $msg" >> $LOG
 }
 
 print_e(){
@@ -72,8 +77,15 @@ configure_remi(){
         rpm --import $REMI_KEY >>$LOG 2>&1 || print_e "Cannot import gpg key: $REMI_KEY"
         rpm -Uvh $REMI_LINK >>$LOG 2>&1 || print_e "Cannot install remi rpm from $REMI_LINK"
     fi
-    sed -i "0,/php55/s/enabled=0/enabled=1/" /etc/yum.repos.d/remi.repo;
-    print "remi=$REMI_LINK configured" 1
+    
+    if [[ $PHP54 -eq 1 ]]; then
+        sed -i -e '/\[remi\]/,/^\[/s/enabled=0/enabled=1/' /etc/yum.repos.d/remi.repo
+        sed -i "0,/php55/s/enabled=0/enabled=1/" /etc/yum.repos.d/remi.repo
+    elif [[ $PHP56 -eq 1 ]]; then
+        sed -i -e '/\[remi\]/,/^\[/s/enabled=0/enabled=1/' /etc/yum.repos.d/remi.repo
+        sed -i -e '/\[remi-php56\]/,/^\[/s/enabled=0/enabled=1/' /etc/yum.repos.d/remi.repo
+    fi
+        print "remi=$REMI_LINK configured" 1
 }
 
 configure_bitrix(){
@@ -82,11 +94,14 @@ configure_bitrix(){
     [[ -f $repo_file ]] && mv -f $repo_file ${repo_file}.bak
     BITRIX_KEY=http://repos.1c-bitrix.ru/yum/RPM-GPG-KEY-BitrixEnv
 
+    REPO=yum
+    [[ $TEST_REPOSITORY -gt 0 ]] && REPO=yum-testing
+
     echo "
 [bitrix]
 name=\$OS \$releasever - \$basearch
 failovermethod=priority
-baseurl=http://repos.1c-bitrix.ru/yum/el/$rel/\$basearch
+baseurl=http://repos.1c-bitrix.ru/$REPO/el/$rel/\$basearch
 enabled=1
 gpgcheck=0
 " > $repo_file
@@ -153,7 +168,7 @@ if [[ "$OS" = "CentOS" ]]; then
         print "Installation bitrix-env4. Please wait."
         yum -y install bitrix-env4 >>$LOG 2>&1
     else
-        if [[ $PHP54 -gt 0 ]]; then
+        if [[ ( $PHP54 -gt 0 ) || ( $PHP56 -gt 0 ) ]]; then
             configure_remi 
             
             # update    
@@ -179,24 +194,10 @@ if [[ "$OS" = "CentOS" ]]; then
         print "Installation bitrix-env package and dependencies" 1
         yum -y install bitrix-env >>$LOG 2>&1 || \
             print_e "Error while bitrix-env installed"
-
-        print "Create config for opcache module: /etc/php.d/opcache.ini"
-        php_modules=/usr/lib/php/modules
-        [[ $is_x86_64 -eq 1 ]] && php_modules=/usr/lib64/php/modules
-        echo "zend_extension=${php_modules}/opcache.so
-opcache.enable=1
-opcache.memory_consumption=124M
-opcache.interned_strings_buffer=8
-opcache.max_accelerated_files=4000
-opcache.max_wasted_percentage=5
-opcache.validate_timestamps=1
-opcache.revalidate_freq=0
-opcache.fast_shutdown=1
-opcache.blacklist_filename=/etc/php.d/opcache*.blacklist" > /etc/php.d/opcache.ini
-
     fi
 
     print "Bitrix Environment for Linux installation complete" 1
+
 else
 
   echo "
@@ -216,6 +217,8 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-BitrixEnv
   yum -y install bitrix-env4.noarch
 
   echo -e "\e[1;32mBitrix Environment for Linux installation complete\e[0m"
+
+
 fi
 
 sed -i 's/~\/menu.sh/#~\/menu.sh/' /root/.bash_profile
