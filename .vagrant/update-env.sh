@@ -8,18 +8,22 @@
 #yum remove -y php-pdo
 #yum install -y php-pdo
 
-echo '
-xdebug.remote_enable = On
-xdebug.remote_connect_back = On' >> /etc/php.d/xdebug.ini.disabled
+rm -f /etc/php.d/*xdebug.ini*
 
-mv -f /etc/php.d/xdebug.ini.disabled /etc/php.d/xdebug.ini
+echo 'zend_extension = xdebug.so
+xdebug.remote_enable = On
+xdebug.remote_connect_back = On' >> /etc/php.d/15-xdebug.ini.disabled
+
+mv -f /etc/php.d/15-xdebug.ini.disabled /etc/php.d/15-xdebug.ini
 
 echo -e "\e[1;32mRestarting apache service\e[0m"
 service httpd restart
 
 mkdir -p /tmp/php_sessions/www
 mkdir -p /tmp/php_upload/www
+wget --quiet --directory-prefix=/home/bitrix/www http://www.1c-bitrix.ru/download/scripts/bitrixsetup.php
 
+chown -R bitrix:bitrix /home/bitrix
 chown -R bitrix:bitrix /tmp/php_sessions
 chown -R bitrix:bitrix /tmp/php_upload
 
